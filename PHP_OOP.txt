@@ -1,0 +1,906 @@
+Creating classes
+
+creating-classes.php
+
+This class will represent a product like a product which you see on an ecommerce site
+
+-------------
+
+<?php
+
+class Product 
+{
+  
+}
+
+$product = new Product();
+$anotherProduct = new Product();
+var_dump($product);
+var_dump($anotherProduct);
+
+-------------
+
+- you could either start a server in that folder: php -S localhost:8000
+(or directly: php -S localhost:8000 create-class.php)
+
+..and in the browser you would add in the address bar: localhost:8000/create-class.php
+(or just: localhost:8000 if you had make the create-class.php the server file and not the whole folder)
+
+- or you simply run this script in the console: php create-class.php
+
+- either way you should get sth like:
+
+object(Product)#1 (0) {}
+object(Product)#2 (0) {}
+
+-------------
+
+Now lets create a property:
+
+-----
+
+class Product 
+{
+  public $name = 'Soap';  
+}
+
+var_dump(new Product());
+-----
+
+- in this case $name is given a default value, which is not mandatory!
+- outputs: 
+object(Product)#1 (1) { ["name"]=> string(4) "soap" }
+
+-----
+
+class Product 
+{
+  public $name = 'Soap';  
+}
+
+$soapObject = new Product();
+print $soapObject->name . "\n";
+-----
+
+Since it is public it can be changed..
+
+class Product 
+{
+  public $name = 'soap';  
+}
+
+$soapObject = new Product();
+print $soapObject->name . "\n";
+
+$soapObject->name = 'toothpaste';
+print $soapObject->name . "\n";
+
+- outputs:
+soap
+toothpaste
+
+--------------------
+
+Challenge: 
+1. Create a price property and give it a default integer value
+2. Access the price on a product object and print it 
+3. Change the price
+4. Access the (new) price on a product object and print it
+
+-----
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price = 5;
+}
+
+$soapObject = new Product();
+print $soapObject->price . "\n";
+
+$soapObject->price = 10;
+print $soapObject->price . "\n";
+
+-------------------
+
+Methods
+------
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price;
+}
+
+$soapObject = new Product();
+var_dump($soapObject);
+
+-------
+
+- outputs:
+object(Product)#1 (2) {
+  ["name"]=>
+  string(4) "soap"
+  ["price"]=>
+  NULL
+}
+
+- if you dont give $price a value, its default will be null
+
+---------
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price; # cents
+}
+
+------
+
+Challenge: 
+1. Access the price property and assign a value of 500 (cents) to it
+2. Write a method that converts it to the currency (simply divided by 100)
+
+------
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price; # cents
+
+  public function convertPriceToCurrency() 
+  {
+    $priceAsCurrency = $this->price / 100;
+    return $priceAsCurrency;
+  }
+}
+
+$soapObject = new Product();
+$soapObject->price = 500;
+
+print $soapObject->convertPriceToCurrency() . " €";
+
+- outputs:
+5 €
+
+or more verbose:
+
+$soapObject = new Product();
+$soapObject->price = 550;
+
+$priceAsCurrency = $soapObject->convertPriceToCurrency();
+var_dump($priceAsCurrency) . PHP_EOL; // PHP_EOL == "\n"
+
+- outputs: 
+float(5.5)
+
+-----------
+
+The "this" keyword:
+
+- to demonstrate make a second object
+
+-------
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price; # cents
+
+  public function convertPriceToCurrency() 
+  {
+    $priceAsCurrency = $this->price / 100;
+    return $priceAsCurrency;
+  }
+}
+
+$soapObject1 = new Product();
+$soapObject1->price = 550;
+
+$soapObject2 = new Product();
+$soapObject2->price = 650;
+
+$priceAsCurrency = $soapObject1->convertPriceToCurrency();
+var_dump($priceAsCurrency) . PHP_EOL;
+// float(5.5)
+
+$priceAsCurrency = $soapObject2->convertPriceToCurrency();
+var_dump($priceAsCurrency) . PHP_EOL;
+// float(6.5)
+
+-------------
+
+Passing arguments to methods
+----------------------------
+
+- making a new file: class-methods.php
+
+--------
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price = 100;
+
+  public function priceAsCurrency($currencySymbol) 
+  {
+    $priceAsCurrency = $this->price / 100;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product();
+print $product->priceAsCurrency('€') . PHP_EOL;
+------
+
+- run it in the console with: php class-methods.php
+- outputs:
+€1
+
+------------
+
+- or you give the argument ($currencySymbol) a default value
+
+----
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price = 100;
+
+  public function priceAsCurrency($currencySymbol = '€') 
+  {
+    $priceAsCurrency = $this->price / 100;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product();
+print $product->priceAsCurrency() . PHP_EOL;
+
+-----
+
+- outputs as expected: 1€
+- if you dont pass an argument, the default value is taken
+- on the other hand: if you pass an argument, like you want the symbol to be a dollar sign, and not a Euro, than the default value defined in the signature will be overriden to what you ve passed
+
+-------------
+
+Multiple method arguments and named arguments
+---------------------------------------------
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price = 100;
+
+  public function priceAsCurrency($currencySymbol = '€', $divisor) 
+  {
+    $priceAsCurrency = $this->price / $divisor;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product();
+print $product->priceAsCurrency(100) . PHP_EOL;
+
+------
+!!
+This is intentionally wrong code, cause $currencySymbol becomes an optional parameter since it has a default value and therefore if you leave it blank when calling the method, the 100 overrides the symbol and the value for the divisor is missing.
+So being "positional arguments" (and not named!) you need to switch them around. 
+!!
+
+-------
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price = 100;
+
+  public function priceAsCurrency($divisor, $currencySymbol = '€') 
+  {
+    $priceAsCurrency = $this->price / $divisor;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product();
+print $product->priceAsCurrency(100) . PHP_EOL;
+
+--------
+
+- now it should work as expected
+- outputs:
+€1
+
+-----------------
+
+Challenge:
+1. give $divisor a default value
+2. test it out passing and not passing an argument for it
+
+------
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price = 100;
+
+  public function priceAsCurrency($divisor = 1, $currencySymbol = '€') 
+  {
+    $priceAsCurrency = $this->price / $divisor;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product();
+print $product->priceAsCurrency() . PHP_EOL;
+
+-----
+
+- point here is: if you want to change the default value of the currencySymbol and you to stick with the default value for the divisor, you need to pass an argument for the divisor
+
+- to get around this problem, you use sth. called named arguments
+
+- note: for this feature you need PHP 8.0 or higher
+
+-----
+
+class Product 
+{
+  public $name = 'soap';  
+  public $price = 100;
+
+  public function priceAsCurrency($divisor = 1, $currencySymbol = '€') 
+  {
+    $priceAsCurrency = $this->price / $divisor;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product();
+print $product->priceAsCurrency(currencySymbol: '$') . PHP_EOL;
+
+-----
+
+- outputs the expected: $100
+
+- note: its just the name of the parameter (currencySymbol) without a leading "$" !
+
+- so the divisor default will remain and the currencySymbol gets changed
+
+-----------------------------------
+
+Constructors
+------------
+
+"You'll use constructors to do whatever should always be done - and done FIRST! - when an object of this class is made." (Larry Ullman)
+
+- in php and also in other oop-languages there are certain methods called "magic methods"
+- the reason why we refer to them as "magic methods" is, that they do appear to be magic, but what actually happen is: you dont call them directly but when you perform a specific action in your code - like for example instantiating an object - the magic method gets called behind the scenes
+
+- start a new file "constructors.php"
+
+-------
+
+class Product 
+{
+  public $name;  
+  public $price;
+
+  public function __construct($name, $price)
+  {
+    $this->name = $name;
+    $this->price = $price;
+  }    
+
+  public function priceAsCurrency($divisor = 1, $currencySymbol = '€') 
+  {
+    $priceAsCurrency = $this->price / $divisor;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product('soap', 100);
+var_dump($product);
+
+-----
+
+- first removing the default values 
+- you write magic methods jsut like any other kind of method, except a particular thing about them is that they start (in php) with a double underscore
+- considering the citation from Larry Ullman, in this case we want to assign values to the properties whenever an object of this class is made.
+- when you instantiating an object in php you actually dont have to provide a pair of parenthesis unless you need to pass arguments to the constructor method, which is called when using the keyword "new" followed by the class name; so if the class doesnt have a constructor or it doesnt require to provide arguments, you could simply instantiate with: $product = new Product;
+- but since our constructor demands to pass in name and price, you have to pass them in when making the instance 
+
+
+-------
+
+Challenge:
+1. Give the constructor arguments default values
+2. Use named arguments to only pass a price argument
+
+--------
+
+class Product 
+{
+  public $name;  
+  public $price;
+
+  public function __construct($name = 'soap', $price = 10)
+  {
+    $this->name = $name;
+    $this->price = $price;
+  }    
+
+  public function priceAsCurrency($divisor = 1, $currencySymbol = '€') 
+  {
+    $priceAsCurrency = $this->price / $divisor;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product(price: 5);
+var_dump($product);
+
+------------------
+
+Constructor Promoted Properties
+-------------------------------
+
+- in PHP 8.0 and higher, you can omit the declaring and the assigning part of what we ve done, meaning: you dont have to define name and price above the constructor and you dont have to assign the passed arguments to the properties
+- you now simply use the new feature: property promotion
+
+---------
+
+class Product 
+{
+
+  public function __construct(
+      public $name = 'soap', 
+      public $price = 10
+  ) {}    
+
+  public function priceAsCurrency($divisor = 1, $currencySymbol = '€') 
+  {
+    $priceAsCurrency = $this->price / $divisor;
+
+    return $currencySymbol . $priceAsCurrency;
+  }
+}
+
+$product = new Product(price: 5);
+var_dump($product);
+
+-------
+
+- you should get the same result as before and..
+- as you can see, for this property promotion you only need to provide the visibilty
+- you actually dont have to give it a default value 
+- ..or the data type which leads to the next OOP topic
+
+-------------------
+
+Type hinting 
+------------
+
+- lets create a new class, and this time i separate the file that only contains the class and not the code that instantiate it
+- and first we are using the old-way of "constructing" without property promotion
+-----
+
+class Song 
+{
+  public $name;
+  public $numOfPlays; # how often has this song been played
+
+  /**
+   * @param string $name
+   * @param int $numOfPlays
+   */
+  public function __construct($name, $numOfPlays)
+  {
+    $this->name = $name;
+    $this->numOfPlays = $numOfPlays; 	
+  }
+}
+
+-------
+
+- then create a 2nd file that interacts with song.php, call it (eg) "primitive.php"
+ 
+-------
+
+require_once 'Song.php';
+
+$song = new Song(5, "abc");
+var_dump($song);
+
+---------
+
+- as you see with this (old) way of declaring the types in a doc-block wont prevent passing wrong data types in, meaning: no error is thrown here (it just informs the IDE which types are required to give you a hint when hovering over, as long u r using vscode or phpstorm)
+- to actually type hint you have to provide the data types simply in the contructor
+
+---------
+
+class Song 
+{
+  public $name;
+  public $numOfPlays; # how often has this song been played
+
+  public function __construct(string $name, int $numOfPlays)
+  {
+    $this->name = $name;
+    $this->numOfPlays = $numOfPlays; 	
+  }
+}
+
+---------
+
+- almost there..
+- now an error is thrown, but only due to the 2nd argument
+- it should be an int, but a string was given
+- but the 1st should be a string and an int was given (which is not considered an error, since when correctly providing an int for numOfPlays, still no error is thrown)
+
+- if you provide an array instead for the first argument:
+
+$song = new Song(['abc', 5], 5);
+var_dump($song);
+
+...you will get the expected fatal error: "Argument #1 ($name) must be of type string, array given
+
+- back to:
+$song = new Song(123, 5);
+var_dump($song->name);
+
+string(3) "123"
+
+- even though we passed an integer, php casts it to a string
+
+- if you DONT want this (default) behaviour, you need to put a:
+
+declare(strict_types=1);
+
+..at the top of the file where the object is being created (primitive-types.php in this case)
+
+- meaning: if you declared strict_types to be true, this type conversion wont happen
+
+- and a plus is: since the type hints are self-explanatory, there is no need for an extra/unneccessary comment block
+
+---------------------------
+
+Class Type declarations
+-----------------------
+
+- above you learnt about type declarations for primitive types (booleans, integers, strings, floats), and now lets look at class types declarations..
+
+- this time we ll create a Playlist class and we want to be able to add songs to a playlist (which should hold several songs, and therefore defaults to an empty array) 
+
+-----------
+
+class Playlist 
+{
+  public $songs = [];
+  
+  public function addSong($song) 
+  {
+    $this->songs[] = $song;
+  }
+}
+
+-------------
+
+- instantiate this class and a separate file "class-type-declarations"
+
+-------------
+
+require_once 'Playlist.php';
+require_once 'Song.php';
+
+$playlist = new Playlist();
+
+$song1 = new Song('Scarborough Fair', 100);
+$song2 = 'Bridge over troubled water';
+
+$playlist->addSong($song1);
+$playlist->addSong($song2);
+
+echo "<pre>";
+print_r($playlist);
+echo "</pre>";
+
+- outputs:
+(
+    [songs] => Array
+        (
+            [0] => Song Object
+                (
+                    [name] => Scarborough Fair
+                    [numOfPlays] => 100
+                )
+
+            [1] => Bridge over troubled water
+        )
+
+)
+
+-----
+
+- imagine you would loop over it
+
+-----
+
+foreach($playlist->songs as $song) {
+	print $song->name . PHP_EOL;
+}
+
+------
+- of course you get the warning: "attempt to read property "name" on string.."
+
+- thats why we need to ensure that only song objects are added to the $playlist, so back in the Playlist class we add the type declaration in the addSong method.
+
+-------
+
+class Playlist 
+{
+  public $songs = [];
+  
+  public function addSong(Song $song) 
+  {
+    $this->songs[] = $song;
+  }
+}
+
+-------
+
+- that means: if you now try to put sth other than a song object into the method, you ll get an error, nice and early
+
+-----------------------------------
+
+Return type declarations
+------------------------
+
+- are used to enforce a particular type which you want to be returned from a method
+
+- lets define that when we ask for the length of the playlist, we get an integer back
+
+-----------
+
+class Playlist 
+{
+  public $songs = [];
+  
+  public function addSong(Song $song) 
+  {
+    $this->songs[] = $song;
+  }
+
+  public function getLength(): int
+  {
+  	return count($this->songs);
+  }
+
+}
+
+-----------
+
+- then create a new file "return-type-declarations"
+
+------------
+
+require_once 'Playlist.php';
+require_once 'Song.php';
+
+$playlist = new Playlist();
+
+$song1 = new Song('Scarborough Fair', 100);
+$song2 = new Song('Bridge over troubled water', 200);
+
+$playlist->addSong($song1);
+$playlist->addSong($song2);
+
+if ($playlist->getLength() < 10) {
+  print "short playlist..." . PHP_EOL;
+}
+
+--------------
+
+- of course it ll output "short playlist" because the if block was triggered
+
+- but imagine you would have hard coded sth into getLength() for whatever reason
+
+-------
+
+public function getLength(): int
+  {
+     // return count($this->songs);
+     return '4 songs';
+  }
+
+--------
+
+- then you would get the appropriate error, that the "Return value must be of type int"
+
+- if you have methods which dont actually return anything you can use a special pseudo type and that is void, for example in the addSong method
+
+
+--------------------
+
+Inheritance
+-----------
+
+In object-oriented programming there are four principles which are
+- encapsulation
+- abstraction
+- inheritance 
+- polymorphism
+
+
+Inheritance:
+Lets first concentrate on inheritance because its possibly the easiest one to understand and its certainly the easiest one to demonstrate. 
+In a nutshell inheritance means you can have a class which inherits from a parent and so it will inherit its properties and its methods but it will also be able to declare its own properties and methods which are different or in addition to the ones that had inherited from the parent. 
+- for this reason we say that the child class is extending the parent class
+
+The way i ll demonstrate inheritance is by showing you some of the problems which it can solve
+
+- create a new (class-) file "Book.php"
+- create simple properties and getters for them
+
+---------
+
+class Book 
+{
+  public $title;
+  public $author;
+  public $price;
+
+  public function __construct(string $title, string $author, int $price) 
+  {
+    $this->title = $title;
+    $this->author = $author;
+    $this->price = $price;    
+  }
+  
+  public function getTitle(): string
+  {
+    return $this->title;
+  }
+  public function getAuthor(): string
+  {
+    return $this->author;
+  }
+  public function getPrice(): int
+  {
+    return $this->price;
+  }
+
+}
+
+----------
+
+- then create a file for creating instances of books, i name it "inheritance.php"
+
+----------
+
+require_once 'Book.php';
+
+$physicalBook = new Book('A random Book', 'Jane Doe', 2000);
+$digitalBook = new Book('A random Book', 'Jane Doe', 2000);
+
+
+print $physicalBook->getAuthor() . PHP_EOL;
+print $digitalBook->getAuthor() . PHP_EOL;
+
+-----------
+
+- so 2 times "Jane Doe" 
+- but how would you distinguish them from each other?
+
+- lets add two additional properties to the Book class
+- a physical book would have a weight, and a digital book a file size
+- default them to 0
+
+------
+
+class Book 
+{
+  public $title;
+  public $author;
+  public $price;
+
+  public $weight;
+  public $fileSize;
+
+  public function __construct(
+  	string $title, 
+  	string $author, 
+  	int $price, 
+  	int $weight = 0, 
+  	int $fileSize = 0
+  )
+  {
+    $this->title = $title;
+    $this->author = $author;
+    $this->price = $price;    
+    $this->weight = $weight;    
+    $this->fileSize = $fileSize;        
+  }
+  
+  public function getTitle(): string
+  {
+    return $this->title;
+  }
+  public function getAuthor(): string
+  {
+    return $this->author;
+  }
+  public function getPrice(): int
+  {
+    return $this->price;
+  }
+
+  public function getWeight(): int
+  {
+    return $this->weight;
+  }
+  public function getFileSize(): int
+  {
+    return $this->fileSize;
+  }
+  
+}
+
+
+--------
+
+- if you now do the following in "inheritance.php":
+
+----
+
+print $physicalBook->getFileSize() . PHP_EOL;
+print $digitalBook->getWeight() . PHP_EOL;
+
+----
+
+- you will notice that regardless that a physical book has no file size, and a digital book has no weight, you will get the default values for them
+- so we are starting to introduce redundancy into our book class, and if you decided you want to add more properties more characteristics which refer only to physical books or only to digital books, then the class is going to start to get quite unwieldy and there is going to be a lot of redundancy
+- that is what you would call a cold smell and probably an indicator that you should thnk of a different approach about creating the book class 
+
+--------------------------------
+
+Redundancy and Duplication
+--------------------------
+
+Lets look at another problem which inheritance solve
+
+- at the end of the book class add another method:
+
+-------
+
+public function print(): string
+{
+  $string = "{$this->title}, {$this->author}, ";
+
+  if ($this->type === 'physical') {
+    $string .= "Weight: {$this->weight}";
+  } elseif ($this->type === 'digital') {
+    $string .= "Filesize: {$this->fileSize}";
+  }
+
+  return $string;
+}
+
+--------
+
+- here we want to print the title and the author and then in the case of a physical book we wanted to print the weight and in the case of a digital book we wanted to print the file size, then we would need to do sth like this what is shown in the if statement, to check for a distinction between the two
+- that would require another property or a way to distinguish between these two by adding a type property
+- so if we carried on down this path our code would become harder and harder to manage, every time asking: is it this type of book or the other
+
+--------
+
