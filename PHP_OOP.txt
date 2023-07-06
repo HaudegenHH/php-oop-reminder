@@ -1136,3 +1136,434 @@ class PhysicalBook extends Book
 - the way how in php the super constructor is called is kind of self-explanatory
 - now adjust the "inheritance.php" again to proof that the inheritance is working by utilizing the print method, and see how title, author and price got assigned via parent constructor and the extra argument weight (in case of a physical book) got set/assigned to its property.
 
+Lets have a recap on what we ve just created. 
+In our Physical and DigitalBook we ve created a constructor by passing into the constructor all the requirements of the parent i.e. the Book class and then the one single property which is specific just to the PhysicalBook. We took the ones which are common, so specific to the parent and we ve set those using the parent keyword to call the parent/super constructor with the "::" scope resolution operator and the __construct method, we ve set those props that way then we ve set the weight property on the PhysicalBook.
+
+------------------------------------
+
+Overriding parent methods
+--------------------------
+
+- copy the print method over to the parent Book class and remove the part which is specific for a Physical or DigitalBook
+
+- you could now print a regular Book as shown in inheritance.php
+
+------
+
+$book = new Book('A random book', 'Jane Doe', 2000);
+print $book->print();
+
+// A random book, Jane Doe
+-------
+
+- if you commented out the print method in one of the sub classes, and still call it after creating for example a PhysicalBook, then it would first search in this class, but since it is commented out, it ll look and find the print method in the parent class.
+
+--------
+
+$physicalBook = new PhysicalBook('A random book', 'Jane Doe', 2000, 2000);
+print $physicalBook->print() . PHP_EOL;
+
+// A random book, Jane Doe
+
+--------
+
+- so were just getting back the title and the author, which means indeed the parent method has been called
+
+- when you uncomment the print method in the PhysicalBook class, it would again print title, author and weight
+
+- an improvement to this could be not just to override the method in the child class but calling the print method of the parent inside the print method of the PhysicalBook and adding the weight to it
+
+-------------------------------
+
+Visibility
+----------
+
+- for now we just used the public visibility but in PHP you have the choice of 3 visibilities:
+1. public
+2. protected
+3. private
+
+Public properties and methods can be accessed anywhere in your code.
+
+Protected properties and methods can be accessed only withing the declaring class or from a subclass.
+
+Private properties and methods can be accessed only withing the declaring class. They are not visible anywhere else.
+
+- create a new class "BaseClass.php" and a "SubClass.php"
+- additionally a file called "visibility.php"
+
+-------
+
+class BaseClass 
+{
+  public $publicProperty = 'Public properties and methods can be accessed anywhere in your code.';
+}
+
+class SubClass extends BaseClass
+{
+  
+}
+--------
+
+visibility.php
+
+require_once 'BaseClass.php';
+require_once 'SubClass.php';
+
+$baseObject = new BaseClass();
+print $baseObject->publicProperty . PHP_EOL;
+
+---------
+
+- the public property can be accessed in the BaseClass and also in the SubClass...
+
+---------
+
+require_once 'BaseClass.php';
+require_once 'SubClass.php';
+
+$baseObject = new BaseClass();
+$subObject = new SubClass();
+
+print $baseObject->publicProperty . PHP_EOL;
+print $subObject->publicProperty . PHP_EOL;
+
+-------------------------------
+
+Protected properties
+--------------------
+
+- go the BaseClass and add a protected property..
+
+-----
+
+class BaseClass 
+{
+  public $publicProperty = 'Public properties and methods can be accessed anywhere in your code.';
+
+  protected $protectedProperty = 'Protected properties and methods can be accessed only withing the declaring class or from a subclass.';
+
+}
+
+------
+
+- but since it is protected, this property cant be accessed in the visibiity.php
+
+-------
+
+print $baseObject->protectedProperty . PHP_EOL;
+
+-------
+
+- which throws of course a fatal error, saying: "Cannot access protected property BaseClass::$
+protectedProperty"
+
+- so to access it you need to create a getter/accessor for it
+
+-------
+
+public function getProtectedProperty(): string
+{
+ return $this->protectedProperty; 
+}
+
+--------
+
+- and in the visibility.php you could call it, since this method is public
+- and being protected it can be called from an object of the child class as well..
+
+--------
+
+print $baseObject->getProtectedProperty() . PHP_EOL;
+print $subObject->getProtectedProperty() . PHP_EOL;
+
+--------
+
+- but lets be more explicit and create a method in the SubClass which accesses that protected property
+
+---------
+
+class SubClass extends BaseClass
+{
+  public function getParentProtectedProperty(): string
+  {
+    return $this->protectedProperty;
+  }
+}
+
+----------
+
+- calling it in the visibility.php
+
+----------
+
+print $subObject->getParentProtectedProperty() . PHP_EOL;
+
+------------------------
+
+Private Properties
+-------------------
+
+- add another property to the BaseClass which will this time private
+
+- and as said the only place where it will be able to accessed will be inside
+the BaseClass, you wont be able to access it in the subclass like with the protected property and also it wont be able to be accessed in the visibilty.php
+- but we re still gonna try that anyway...
+
+------
+
+print $baseObject->privateProperty . PHP_EOL;
+
+------
+
+- throws as expected a fatal error: "Cannot access private property BaseClass::$pr
+ivateProperty.."
+
+- to proof that it can be accessed in the class which defines it, lets add another getter 
+
+-------
+
+public function getPrivateProperty(): string 
+{
+  return $this->privateProperty;
+}
+
+--------
+
+- so we re getting sort of access to the private property by proxy
+
+--------
+
+print $baseObject->getPrivateProperty() . PHP_EOL;
+
+---------
+
+- what if we want to access it in our SubClass, this shouldnt be allowed because "private props and methods can only be accessed within the declaring class. They are not visible anywhere else". 
+- basically by saying they are not visible means that our subclass shouldnt even be able to know that this private property exists
+
+- to proof that create a similar method in the SubClass 
+
+----------
+
+class SubClass extends BaseClass
+{
+  public function getParentProtectedProperty(): string
+  {
+    return $this->protectedProperty;
+  }
+
+  public function getParentPrivateProperty(): string 
+  {
+    return $this->privateProperty;
+  }
+
+}
+
+----------
+
+- if you have a smart IDE like PHPStorm, you will be notified already at this point, that it knows nothing about a private property
+
+- but if you still try it out...
+
+-----------
+
+print $subObject->getParentPrivateProperty() . PHP_EOL;
+
+-----------
+
+- ...you will get a warning: "PHP Warning:  Undefined property: SubClass::$privateProperty "
+
+- note: if you set the return type to string, it would throw a different (fatal) error, since 
+$this->privateProperty is null (and not a string as the expected return type)
+
+- nonetheless its proven that the private property is not visible to the sub class
+
+--------------------
+
+Method visibility
+-----------------
+
+- lets try to access protected methods in the SubClass
+- for that simply change the visibility of the getProtectedProperty method from public to protected
+
+---------
+
+- try to access it first in the visibility.php
+
+--------
+
+print $baseObject->getProtectedProperty() . PHP_EOL;
+print $subObject->getProtectedProperty() . PHP_EOL;
+
+--------
+
+- in both cases you would get a fatal error: " Call to protected method 
+BaseClass::getProtectedProperty() from global scope"
+
+- but we could access this method in the sub class
+
+- simply change the getParentProtectedProperty method in the way, that you now call the protected method inside..
+
+--------
+
+public function getParentProtectedProperty(): string
+{
+  // return $this->protectedProperty;
+  return $this->getProtectedProperty();
+}
+
+---------
+
+- which could then be called in the visibility.php..
+
+---------
+
+print $subObject->getParentProtectedProperty() . PHP_EOL;
+
+----------
+
+- this public method from the SubClass calls the protected method of the BaseClass, which finally returns the protected property, and we can call this method from there because we can access protected methods and properties in sub classes
+
+- covered quite a lot scenarios here and done it pretty verbose (apologies for that)
+
+- but it ll be 2nd nature to you after you gone through it a few times (if you re not already fully understanding)
+
+
+- lets ask the question: why do we have visibility and why might it be useful for us developers, this leads to the next OOP principle encapsulation ..
+
+------------------
+
+Encapsulation
+-------------
+
+- refers to the bundling of data with the methods which operates on that data
+- we had a look at visibility and encapsulation kind of goes hand in hand with that
+
+Here are some nice and clear reasons of why we use encapsulation:
+1. The functionality is defined in one place and not in mulitiple places.
+
+2. It is defined in a logical place, i.e. the same place as its data
+
+3. The data inside our objects cant be unexpectededly or unwantedly modified by external code in a 
+completely different part of our program.
+
+- the way im going to demonstrate this principle is by revisiting the Song and Playlist classes
+
+- u ll notice that i left the Playlist class quite sparse with just public property inside
+
+-----
+
+class Playlist 
+{
+  public $songs = [];
+}
+
+-----
+
+- lets also create a new file to play around with these classes called "encapsulation.php"
+
+-----
+
+require_once 'Playlist.php';
+require_once 'Song.php';
+
+$beatlesSongs = new Playlist();
+
+$song = new Song('Yesterday', 100);
+
+$fakeSong = 'This is not a song, it just a string';
+
+------
+
+- then lets add the genuine song (object) and the fake one into the song array (the only 
+public property that the Playlist class has)
+- and var_dump the songs
+
+-------
+
+$beatlesSongs->songs[] = $song;
+$beatlesSongs->songs[] = $fakeSong;
+
+var_dump($beatlesSongs->songs);
+
+-------
+
+- outputs:
+
+array(2) {
+  [0]=>
+  object(Song)#2 (2) {
+    ["name"]=>
+    string(9) "Yesterday"
+    ["numOfPlays"]=>
+    int(100)
+  }
+  [1]=>
+  string(36) "This is not a song, it just a string"
+}
+
+
+- so the question is: do we really want to allow strings into our playlist of what should only be 
+  songs?
+- the first step is to prevent this arbitrary adding of anything to the beatles songs array
+- the quickest and easiest that i can think of is to go over to the playlist class and make the songs
+  array private
+- that way you could no longer access the private property from outside the Playlist class
+
+- in order to only be able to add song objects to the songs array, we create a addSong method, which
+  will only accept Song objects as arguments (see type declarations)
+
+- and now if you try to call this method in the encapsulation.php 
+
+-------
+
+$beatlesSongs->addSong($fakeSong);
+
+--------
+
+- ...you will get the appropriate fatal error: "Playlist::addSong(): Argument #1 ($song) must be of   type Song, string given"
+- so now we have that protection, we cant just go and add anything to the songs array, because we ve 
+  taken one step: which is to make our songs property private 
+  and then we ve taken a further step so theres only one way now of adding a song to that songs 
+  array, which means: you must use the method which operates on that data, but due to the type 
+  declaration we cannot just add a string because otherwise we ll get a php fatal error
+- so completely protected from adding the wrong kind of data to this songs property
+
+- also whats needed is a getter, since it is private and you cant jst inspect whats in $songs in the
+  encapsulation.php
+
+---------
+
+public function getSongs(): array
+{
+  return $this->songs;
+}
+
+----------
+
+$beatlesSongs->addSong($song);
+var_dump($beatlesSongs->getSongs());
+
+----------
+
+outputs:
+
+array(1) {
+  [0]=>
+  object(Song)#2 (2) {
+    ["name"]=>
+    string(9) "Yesterday"
+    ["numOfPlays"]=>
+    int(100)
+  }
+}
+
+-----------
+
+- there we have nicely demonstrated the reasons why we have encapsulation 
+- if you remember how we defined encapsulation: the functionality is defined in one place (like for 
+  the songs), the functionality is defined in a logical place i.e. with the data which it will 
+  operate on and also it means that our data cant be unwantedly or unexpectedly modified by external
+  code. 
+  You can only act upon this data by the methods which are defined in the same class
+

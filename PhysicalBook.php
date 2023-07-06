@@ -22,8 +22,8 @@ class PhysicalBook extends Book
     return $this->weight;
   }
 
-  public function print() {
-  	return "{$this->title}, {$this->author}, weight: {$this->weight}g";
+  public function print(): string {
+  	return parent::print() . ", Weight: {$this->weight}g";
   }
 
 }

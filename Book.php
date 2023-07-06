@@ -34,4 +34,8 @@ class Book
   {
     return "$" . $this->price / 100;  
   }
+
+  public function print(): string {
+  	return "{$this->title}, {$this->author}";
+  }
 }
