@@ -904,3 +904,235 @@ public function print(): string
 
 --------
 
+- the obvious alternative is to create two separated classes
+
+- thus create "PhysicalBook.php" and "DigitalBook.php" classes
+
+-----
+
+class PhysicalBook 
+{
+  public $title;
+  public $author;
+  public $price;
+  public $weight;
+
+  public function __construct(
+  	string $title, 
+  	string $author, 
+  	int $price,
+  	int $weight = 0, 
+  ) 
+  {
+    $this->title = $title;
+    $this->author = $author;
+    $this->price = $price;    
+    $this->weight = $weight;    
+  }
+
+
+
+  public function getTitle(): string
+  {
+    return $this->title;
+  }
+  public function getAuthor(): string
+  {
+    return $this->author;
+  }
+  public function getPrice(): int
+  {
+    return $this->price;
+  }
+  public function getWeight(): int
+  {
+    return $this->weight;
+  }
+
+  public function print() {
+  	return "{$this->title}, {$this->author}, weight: {$this->weight}g";
+  }
+}
+
+-----
+
+class DigitalBook 
+{
+public $title;
+  public $author;
+  public $price;
+
+  public $fileSize;
+
+  public function __construct(
+  	string $title, 
+  	string $author, 
+  	int $price,
+  	int $fileSize = 0
+  ) 
+  {
+    $this->title = $title;
+    $this->author = $author;
+    $this->price = $price;    
+    $this->fileSize = $fileSize;
+  }
+  
+  public function getTitle(): string
+  {
+    return $this->title;
+  }
+  public function getAuthor(): string
+  {
+    return $this->author;
+  }
+  public function getPrice(): int
+  {
+    return $this->price;
+  }
+  public function getFileSize(): int
+  {
+    return $this->fileSize;
+  }
+
+  public function print() {
+  	return "{$this->title}, {$this->author}, file size: {$this->fileSize}kb";
+  }
+}
+
+-----------
+
+- notice that i didnt extend from Book yet
+
+- with that (in between step) we could adjust the "inheritance.php":
+
+-----
+
+
+// require_once 'Book.php';
+require_once 'PhysicalBook.php';
+require_once 'DigitalBook.php';
+
+$physicalBook = new PhysicalBook('A random Book', 'Jane Doe', 2000, 2000);
+$digitalBook = new DigitalBook('A random Book', 'Jane Doe', 2000, 1024);
+
+
+print $physicalBook->print() . PHP_EOL;
+print $digitalBook->print() . PHP_EOL;
+
+------
+
+- one thing which will no doubt have occured to you is that we still have some duplication, cause every time a PhysicalBook or a DigitalBook is created, i still need to create it with the same three arguments, each for both of these 
+- and before i improve this with inheritance..
+- let me show you a way in which way this duplication can be a real problem
+- lets say for example we want to show the price as the currency
+- at the moment we're getting the price, but if this is in dollars this is coming back as cents
+- so if we wanted it to come back as dollars we ll add a method to our PhysicalBook "getPriceAsCurrency", but this time return a float
+
+-------
+
+public function getPriceAsCurrency(): float 
+{
+  return $this->price / 100;  
+}
+
+--------
+
+- that might be a business requirement to be able to display this as dollars and in that case it would be a nice way to handle that
+- but if we're going to need that for a physical book then it would be need for a DigitalBook as well
+- so copy and paste the method in there
+- and in "inheritance.php" call the new method:
+
+--------
+
+print $physicalBook->getPriceAsCurrency() . PHP_EOL;
+print $digitalBook->getPriceAsCurrency() . PHP_EOL;
+
+---------
+
+- outputs as expected: 20
+- but then business department says the requirement was that we wanted a dollar sign in front of it
+- then you adjust the code the both classes, and even requires to change the return type
+
+- lets eliminate the rest of the redundancy and duplication, which can be solved by inheritance and the keyword "extends"
+
+- thus look for the commonalities in both classes, in other words: what could be extracted into a parent class
+- and since title, author and price are common to both phsysical and digital book, they can remain in the Book class
+
+
+-----
+
+class Book 
+{
+  public $title;
+  public $author;
+  public $price;
+
+  public function __construct(
+  	string $title, 
+  	string $author, 
+  	int $price,  
+  ) 
+  {
+    $this->title = $title;
+    $this->author = $author;
+    $this->price = $price;    
+  }
+  
+  public function getTitle(): string
+  {
+    return $this->title;
+  }
+  public function getAuthor(): string
+  {
+    return $this->author;
+  }
+  public function getPrice(): int
+  {
+    return $this->price;
+  }
+
+  public function getPriceAsCurrency(): string 
+  {
+    return "$" . $this->price / 100;  
+  }
+}
+
+------
+
+- and now lets make Physical and DigitalBook children of Book 
+
+------
+
+class PhysicalBook extends Book
+{
+  public $weight;
+
+  public function __construct(
+  	string $title, 
+  	string $author, 
+  	int $price,
+  	int $weight = 0, 
+  ) 
+  {
+    parent::__construct($title, $author, $price);
+    $this->weight = $weight;    
+  }
+ 
+  public function getWeight(): int
+  {
+    return $this->weight;
+  }
+
+  public function print() {
+  	return "{$this->title}, {$this->author}, weight: {$this->weight}g";
+  }
+
+}
+
+------
+
+- make sure the Book class is available (later on im going to change that to autoloading, which means you dont have to require files)
+- since title, author and price are inherited from the parent class the properties and getters can be removed in the child class (no need to redefine them in the sub class unless you wanted to override them)
+- the way how in php the super constructor is called is kind of self-explanatory
+- now adjust the "inheritance.php" again to proof that the inheritance is working by utilizing the print method, and see how title, author and price got assigned via parent constructor and the extra argument weight (in case of a physical book) got set/assigned to its property.
+
