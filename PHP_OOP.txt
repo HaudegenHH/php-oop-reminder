@@ -1567,3 +1567,329 @@ array(1) {
   code. 
   You can only act upon this data by the methods which are defined in the same class
 
+-------------------------
+
+Typed Properties
+----------------
+
+- extra way of giving ourselves some protection over what type of data can be stored in variables
+
+- create a new file "typed-properties.php"
+
+- and re-visit our Song class..
+
+----------
+
+
+require_once 'Song.php';
+
+$songTitles = ['Yesterday', 'Help!', 'Let it be'];
+
+$song = new Song($songTitles[0], 100);
+
+var_dump($song->name);
+
+-----------
+
+outputs:
+
+string(9) "Yesterday"
+
+- what if we wanted to assign a new song name on the fly
+- we can actually do this because the name property is public
+
+------------
+
+$song->name = $songTitles[1];
+
+var_dump($song->name);
+
+------------
+
+outputs:
+
+string(5) "Help!"
+
+
+- not surprising, but: sometimes there might be a mistake in the code and you completely forget 
+that you might not access it as an array, so what happen if we did sth like...
+
+------------
+
+$song->name = $songTitles;
+
+var_dump($song->name);
+
+-------------
+
+ouputs:
+
+array(3) {
+  [0]=>
+  string(9) "Yesterday"
+  [1]=>
+  string(5) "Help!"
+  [2]=>
+  string(9) "Let it be"
+}
+
+- we actually set the song name to an array of three different titles
+- so we need better protection against these mistakes
+
+- you prevent that from happening on your properties directly, so the name property of the Song class
+  must be a string
+
+--------
+
+
+class Song 
+{
+  public string $name;
+  ...
+}
+
+--------
+
+- and when you now try to set it to an array (or anything other than a string) in the 
+  "typed-properties.php", you should get the error: "Cannot assign array to property Song::$name of
+   type string"
+- these are typed properties, very simple and similar to what we ve been doing where we ve given type
+  hints in our methods, you simply put the type in front of the parameter/property name and the work
+  is done for you by php
+- one little caveat: you can only do this with PHP 7.4 or higher
+
+- lets finish this off with a challenge: do the same thing for the number of plays and then try it
+  out in the "typed-properties.php"
+
+--------
+
+$song->numOfPlays = 'not an int';
+var_dump($song->numOfPlays);
+
+--------
+
+outputs:
+
+"Cannot assign string to property Song::$numOfPlays of type int"
+
+----------------
+
+Union Types
+-----------
+
+- for now we said that for example the name property of the Song class can be only of one type 
+  (only of type string) 
+- but you can actually set it up where it can be multiple different types 
+
+- for this create a property rating and make it private
+
+-----
+
+class Song 
+{
+  /**
+   * song rating from 0 to 5 
+   * half ratings allowed e.g. 3.5
+   * @var int|float
+   */
+  private int|float $rating;
+}
+
+-----
+
+- so we allow $rating to be either an int or a float (so that you have eg. in between ratings of 3.5)
+- also added a doc block 
+
+- create a new file "union-types.php"
+
+- add functionality for setting and getting the song rating
+- rating can not be set to less than 0 or more than 5
+  - if < 0 attempted, set rating to 0
+  - if > 5 attempted, set rating to 5
+
+------
+
+public function getRating(): int|float
+{
+  return $this->rating;
+}
+
+
+public function setRating(int|float $rating): void
+{
+  // if($rating < 0) {
+  // 	$this->rating = 0;
+  // } elseif ($rating > 5) {
+  // 	$this->rating = 5;
+  // } else {
+  // 	$this->rating = $rating;
+  // }
+
+  // or in short:
+  $rating = max(0, $rating);
+  $this->rating = min(5, $rating);
+}
+
+-------
+
+- test out the getter and setter in "union-types.php"..
+
+-------
+
+$song->setRating('neither an int nor a float');
+var_dump($song->getRating());
+
+--------
+
+ouputs:
+fatal error: "Song::setRating(): Argument #1 ($rating) must be of type int|float, string given"
+
+--------
+
+
+$song->setRating(-3);
+var_dump($song->getRating());
+
+$song->setRating(10);
+var_dump($song->getRating());
+
+$song->setRating(3.5);
+var_dump($song->getRating());
+
+
+----------
+
+- outputs correctly:
+
+int(0)
+int(5)
+float(3.5)
+
+--------------------------
+
+Static properties
+-----------------
+
+- .. differ from regular object properties in that you call them directly off of the class 
+- rather than an instance object
+
+- create a Counter class with a static property
+
+-------
+
+class Counter
+{
+  public static int $count = 0;
+}
+
+---------
+
+- first visibility, then static, then the data type
+
+- and as said: static properties belong to the class scope, so it means you dont have to create 
+  a new counter object in order to be able to access static properties on it
+
+- the way you access them is with the scope resolution operation "::"
+
+- create a file "static-properties.php"
+
+---------
+
+require_once 'Counter.php';
+
+print Counter::$count . PHP_EOL;
+
+// 0
+----------
+
+- if you wanted to increment the counter by 1...
+
+----------
+
+Counter::$count++;
+
+print Counter::$count . PHP_EOL;
+
+----------
+
+Why use static properties? 
+
+- available anywhere in your program
+- easy to setup and access
+- same value is available to every object instance of that class.
+
+- since a static property is available to every instance of a class and holds the same
+  value for every instance, it makes it possible to keep track of particular values
+
+- thats what i want to demonstrate now..
+
+- create a new Class and call it "Connection" (think of this as like a connection to a online 
+  conference or sth like that)
+
+- we want to keep track of the number of connections
+
+------ 
+
+class Conference 
+{
+  public static int $count = 0;     
+}
+
+-------
+
+- what i want to achieve here is that every time a new Connection is created, we want to increase
+  this count by 1
+- the way that you access static properties from within the class is to use the keyword "self"
+
+--------
+
+class Connection
+{
+  public static int $count = 0;
+
+  public function __construct()
+  {
+    self::$count++;
+  }  
+}
+
+---------
+
+- back over in the static-properties.php..
+
+---------
+
+require_once 'Connection.php';
+
+$connection1 = new Connection();
+print Connection::$count . PHP_EOL;
+
+$connection2 = new Connection();
+print Connection::$count . PHP_EOL;
+
+// 1
+// 2
+
+----------
+
+- But same old problem: since $count is marked as public you could simply change it..
+
+----------
+
+Connection::$count += 20;
+
+----------
+
+- the way that you protect yourself from that would be to make $count private
+
+- and that means that i'd also need to access it somehow using a method
+
+- which leads to the topic static methods
+
+-----------------------
+
+Static methods
+--------------
+
+
+
