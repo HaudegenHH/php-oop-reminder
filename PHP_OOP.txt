@@ -1891,5 +1891,306 @@ Connection::$count += 20;
 Static methods
 --------------
 
+- first make $count private
 
+- create a file "static-methods.php"
+
+- and (for now) create an instance method that returns that static property
+
+------
+
+public function getCount(): int
+{
+  return self::$count;
+}
+
+-----
+
+- you could do that, but: it requires to make an instance of that class first before you could call that fn
+
+-----
+
+$connection = new Connection();
+print $connection->getCount();
+
+------
+
+- so instead of a public we change this getter to a static fn
+
+------
+
+public static function getCount(): int
+{
+  return self::$count;
+}
+
+-------
+
+- and access it with...
+
+.......
+
+print Connection::getCount() . PHP_EOL;
+
+-------------------
+
+Class Constants
+---------------
+
+- if you ve done some procedural php up until this point then your are probably aware of global 
+  constants 
+- class constants are the same, except they belong to a class, which makes the whole system more 
+  cohesive when they are related to a particular class
+
+- create a file "class-constants.php"
+
+- you might have used constants in the following way:
+
+------
+
+define('CREATED', 201);
+
+print CREATED . PHP_EOL;
+
+-------
+
+- we actually used the global constant PHP_EOL all along (which evaluates to a new line character as 
+  part of core php)
+
+- one other way to define them is by using the keyword const
+
+-------
+
+const UPDATED = 204;
+print UPDATED . PHP_EOL;
+
+-------
+
+- lets now create a class where we define some class constants
+
+- create a class "Http"
+
+------
+
+class Http 
+{
+  public const NOT_FOUND = 404;
+  public const OK = 200;
+  public const CREATED = 201;
+}
+
+------
+
+- constants as the name suggest, cannot be changed
+
+------
+
+- you dont need to instantiate much like static property in order to access class constants since 
+  they belong to the class scope
+
+- thus you access them directly off of the class - no object needed
+
+- back in class-constants.php..
+
+-----
+
+require_once 'Http.php';
+
+print Http::CREATED . PHP_EOL;
+
+------
+
+- and if you try to change them...
+
+-------
+
+Http::CREATED = 500;
+
+-------
+
+- ...you will get the error: 'PHP Parse error:  syntax error, unexpected token "=" '
+- meaning: you cant reassign a constants, once you ve created them they are fixed forever
+
+----------------------
+
+Abstract Classes
+----------------
+
+- ..are classes which you dont instantiate themselves, instead they define an "interface" for 
+  classes which extend them
+
+- lets revisit the Book and the PhysicalBook classes
+
+------
+
+class Book 
+{
+  public $title;
+
+  public function __construct(
+    string $title, 
+  ) 
+  {
+    $this->title = $title;
+  }
+  
+  public function getTitle(): string
+  {
+    return $this->title;
+  }
+
+}
+
+--------
+
+class PhysicalBook extends Book
+{  
+
+  public function __construct(
+    string $title, 
+    int $weight = 0, 
+  ) 
+  {
+    parent::__construct($title);
+    $this->weight = $weight;    
+  }
+ 
+  public function getWeight(): int
+  {
+    return $this->weight;
+  }
+
+}
+
+---------
+
+- got rid of some properties and jst stick to title and weight
+
+- looking at the book class, you ll notice that it is sth which is always going to be extended with
+  the actual type of book such as physical or digital book
+- in other words: it isnt sth that you'd want to instantiate itself, you would instead instantiate a
+  subclass 
+- for that reason we can make this class abstract, which would prevent a client coder from trying 
+  to instantiate it and the way that you do that is you simply prefix with the keyword "abstract"
+
+------
+
+abstract class Book 
+{
+  ....
+}
+
+------
+
+- create a file "abstract-classes.php"
+
+- and try to instantiate a book..
+
+------
+
+require_once 'Book.php';
+require_once 'PhysicalBook.php';
+
+$book = new Book();
+
+------
+
+- you will get the expected error: "PHP Fatal error:  Uncaught Error: Cannot instantiate abstract
+  class Book"
+
+-------
+
+- so whats the purpose of an abstract class?
+- like said before: it defines an interface because any child of the book will have a title and with
+  the getter you'd have a little bit of funcitonality 
+- and when you then extend it with a physical or rather a concrete subclass, that is the class which
+  you would instantiate
+
+--------
+
+$book = new PhysicalBook('Lord of the rings', 500);
+print $book->getTitle();
+
+--------
+
+- so even though we ve declared it abstract, you can still access the properties and methods
+- the one thing you cannot do is actually create an instance of it
+
+--------------------------
+
+Abstract Methods
+----------------
+
+- since you define an interface for the subclasses to implement, creating an abstract method called 
+  write in the Book class means that every class which extends the Book class must define a method
+  called write which has the same signature as the one which you define in the abstract class
+
+------
+
+abstract class Book 
+{
+  public $title;
+
+  public function __construct(
+    string $title, 
+  ) 
+  {
+    $this->title = $title;
+  }
+  
+  public function getTitle(): string
+  {
+    return $this->title;
+  }
+
+  abstract public function write(): string;
+
+}
+
+---------
+
+- when you now go over to the PhysicalBook, your IDE would probably indicate (with a red squiggly 
+  line) that sth is wrong with the class
+- e.g. PHPStorm is complaining "class must be declared abstract or implement the method write"
+
+- because we re extending the Book class which has an abstract method means you have to implement 
+  that method and its functionality (since in the abstract class we just have the hull, the
+  signature)
+
+--------
+
+class PhysicalBook extends Book
+{  
+
+  public function __construct(
+    string $title, 
+    int $weight = 0, 
+  ) 
+  {
+    parent::__construct($title);
+    $this->weight = $weight;    
+  }
+ 
+  public function getWeight(): int
+  {
+    return $this->weight;
+  }
+
+  public function write(): string
+  {
+    $weightInKg = $this->weight / 1000;    
+    return "Title: {$this->title}, Weight: {$weightInKg}kg";       
+  }
+}
+
+--------
+
+- being a "concrete" function in the PhysicalBook class its not prefixed with abstract
+- in order for it to match the parent we must also type hint the return type
+
+- you cant make the visibility more strict in the subclass
+- so if the visibility is public in the abstract class, you cannot make it to sth which is more
+  strict in the subclass (protected and private)
+- the other way round is however possible: if this method is declared protected in the Book class, 
+  you could maintain this visibility or make it less strict (meaning: you could declare it protected or public in the subclass)
 
